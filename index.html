@@ -15,12 +15,28 @@
     }
   </script>
 
+  <!-- Ambient background blobs for parallax depth -->
+  <div class="bg-blob blob-blue"></div>
+  <div class="bg-blob blob-purple"></div>
+  <div class="bg-blob blob-indigo"></div>
+
   <div class="app-container">
     <!-- Navbar -->
     <nav class="navbar-container">
       <div class="navbar-left">
         <a href="index.html" class="navbar-brand">
-          <span class="brand-icon">🌬️</span> AeroBreath
+          <svg class="brand-logo-svg" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="logo-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#3b82f6" />
+                <stop offset="50%" stop-color="#8b5cf6" />
+                <stop offset="100%" stop-color="#06b6d4" />
+              </linearGradient>
+            </defs>
+            <path d="M 16 16 C 10 8, 4 10, 4 18 C 4 26, 11 26, 16 18 C 21 26, 28 26, 28 18 C 28 10, 22 8, 16 16 Z" stroke="url(#logo-grad)" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" />
+            <circle cx="16" cy="12" r="2.5" fill="#10b981" />
+          </svg>
+          AeroBreath
         </a>
       </div>
 
@@ -294,28 +310,60 @@
     // RENDER NAVIGATION LINKS & ACCESS GATES
     // ----------------------------------------------------
     const roleLinks = document.getElementById('role-links');
-    if (role === 'CITIZEN') {
-      roleLinks.innerHTML = `<span class="navbar-link active" onclick="switchTab('citizen')">My Health Journal</span>`;
-      document.getElementById('panel-citizen').style.display = 'block';
-      loadJournalLogs();
-    } else if (role === 'ENVIRONMENTAL_OFFICER' || role === 'SYSTEM_ADMIN') {
-      roleLinks.innerHTML = `<span class="navbar-link active" onclick="switchTab('officer')">Stations List</span>`;
-      document.getElementById('panel-officer').style.display = 'block';
-      loadStations();
+    let linksHtml = '';
+    let defaultTab = '';
+
+    if (role === 'SYSTEM_ADMIN') {
+      linksHtml = `
+        <span class="navbar-link active" onclick="switchTab('officer', this)">Sensor Stations</span>
+        <span class="navbar-link" onclick="switchTab('citizen', this)">Health Journal</span>
+        <span class="navbar-link" onclick="switchTab('researcher', this)">Clinical Insights</span>
+      `;
+      defaultTab = 'officer';
+    } else if (role === 'ENVIRONMENTAL_OFFICER') {
+      linksHtml = `
+        <span class="navbar-link active" onclick="switchTab('officer', this)">Sensor Stations</span>
+        <span class="navbar-link" onclick="switchTab('citizen', this)">Health Journal</span>
+      `;
+      defaultTab = 'officer';
     } else if (role === 'MEDICAL_RESEARCHER') {
-      roleLinks.innerHTML = `<span class="navbar-link active" onclick="switchTab('researcher')">Clinical Insights</span>`;
-      document.getElementById('panel-researcher').style.display = 'block';
+      linksHtml = `
+        <span class="navbar-link active" onclick="switchTab('researcher', this)">Clinical Insights</span>
+        <span class="navbar-link" onclick="switchTab('officer', this)">Sensor Stations</span>
+      `;
+      defaultTab = 'researcher';
+    } else if (role === 'CITIZEN') {
+      linksHtml = `
+        <span class="navbar-link active" onclick="switchTab('citizen', this)">My Health Journal</span>
+        <span class="navbar-link" onclick="switchTab('officer', this)">Sensor Stations</span>
+      `;
+      defaultTab = 'citizen';
     }
 
+    roleLinks.innerHTML = linksHtml;
+
+    // Show initial panel
+    document.getElementById('panel-citizen').style.display = defaultTab === 'citizen' ? 'block' : 'none';
+    document.getElementById('panel-officer').style.display = defaultTab === 'officer' ? 'block' : 'none';
+    document.getElementById('panel-researcher').style.display = defaultTab === 'researcher' ? 'block' : 'none';
+
+    // Load initial data
+    if (role === 'CITIZEN' || role === 'SYSTEM_ADMIN' || role === 'ENVIRONMENTAL_OFFICER') {
+      loadJournalLogs();
+    }
+    loadStations();
+
     // Switch between panels visually (if multi-linked)
-    function switchTab(activeTab) {
+    function switchTab(activeTab, element) {
       document.getElementById('panel-citizen').style.display = activeTab === 'citizen' ? 'block' : 'none';
       document.getElementById('panel-officer').style.display = activeTab === 'officer' ? 'block' : 'none';
       document.getElementById('panel-researcher').style.display = activeTab === 'researcher' ? 'block' : 'none';
       
       const links = document.querySelectorAll('.navbar-link');
       links.forEach(link => link.classList.remove('active'));
-      event.target.classList.add('active');
+      if (element) {
+        element.classList.add('active');
+      }
     }
 
     // ----------------------------------------------------
@@ -352,7 +400,7 @@
       const notes = document.getElementById('notes').value.trim();
 
       try {
-        await api.post('/api/journal', {
+        await api.post('/api/health', {
           symptomScore: score,
           activityLevel,
           notes
@@ -375,7 +423,7 @@
     async function loadJournalLogs() {
       const timeline = document.getElementById('journal-timeline');
       try {
-        const response = await api.get('/api/journal');
+        const response = await api.get('/api/health');
         const logs = response.data; // List of HealthObservation
         if (logs.length === 0) {
           timeline.innerHTML = `<div class="empty-state">No symptoms logged yet. Use the form to submit your first entry.</div>`;
@@ -700,6 +748,21 @@
       }
     });
 
+  </script>
+  <script>
+    // Futuristic background blobs parallax movement
+    const blob1 = document.querySelector('.blob-blue');
+    const blob2 = document.querySelector('.blob-purple');
+    const blob3 = document.querySelector('.blob-indigo');
+
+    document.addEventListener('mousemove', (e) => {
+      const x = (window.innerWidth / 2 - e.clientX) / 25;
+      const y = (window.innerHeight / 2 - e.clientY) / 25;
+      
+      if (blob1) blob1.style.transform = `translate(${x}px, ${y}px)`;
+      if (blob2) blob2.style.transform = `translate(${-x}px, ${-y}px)`;
+      if (blob3) blob3.style.transform = `translate(${x * 0.5}px, ${-y * 0.5}px)`;
+    });
   </script>
 </body>
 </html>
