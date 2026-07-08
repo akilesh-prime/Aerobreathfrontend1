@@ -8,47 +8,171 @@
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 <body>
-  <div class="auth-container">
-    <div class="auth-card glass animate-fade-in">
-      <div class="auth-header">
-        <div class="logo-spark">Register 🌬️</div>
-        <h2>AeroBreath</h2>
-        <p>Create your new account to join the air monitor network</p>
+  <!-- Ambient background blobs for parallax depth -->
+  <div class="bg-blob blob-blue"></div>
+  <div class="bg-blob blob-purple"></div>
+  <div class="bg-blob blob-indigo"></div>
+
+  <div class="split-container">
+    <!-- Left Column: About this Page (Vibrant Colors + Slide Animation) -->
+    <div class="split-left">
+      <div class="about-card glass animate-fade-in">
+        <h3>About AeroBreath Portal</h3>
+        <p>AeroBreath is an advanced, next-generation environmental intelligence platform. It bridges the gap between public respiratory health journaling and real-time ambient air quality metrics.</p>
+        
+        <div class="about-features">
+          <div class="feature-item animate-slide-up delay-1">
+            <span class="feature-icon icon-blue">📊</span>
+            <div>
+              <h4>Real-time Monitoring</h4>
+              <p>Environmental officers manage sensors and log precise AQI, PM2.5, and PM10 metrics across cities.</p>
+            </div>
+          </div>
+          <div class="feature-item animate-slide-up delay-2">
+            <span class="feature-icon icon-green">📓</span>
+            <div>
+              <h4>Health Journaling</h4>
+              <p>Citizens log daily symptoms to construct a personal exposure log and track long-term health anomalies.</p>
+            </div>
+          </div>
+          <div class="feature-item animate-slide-up delay-3">
+            <span class="feature-icon icon-purple">🧬</span>
+            <div>
+              <h4>Correlation Analytics</h4>
+              <p>Medical researchers leverage diagnostic tools to trace relationships between air pollution spikes and clinical logs.</p>
+            </div>
+          </div>
+        </div>
       </div>
+    </div>
 
-      <div id="alert-container"></div>
+    <div class="split-right">
+      <div class="auth-card glass animate-fade-in" style="position: relative;">
+        <!-- Speech Bubble -->
+        <div class="speech-bubble" id="speech-bubble">Hi! 🌬️</div>
+        <!-- Cute Peeking Bunny -->
+        <div class="wind-animal" id="wind-animal">
+          <svg viewBox="0 0 100 100" width="100%" height="100%">
+            <!-- Wings -->
+            <path d="M 22 55 C 10 50, 10 35, 25 45 C 28 47, 27 52, 22 55 Z" fill="#dbeafe" stroke="#bfdbfe" stroke-width="1" />
+            <path d="M 78 55 C 90 50, 90 35, 75 45 C 72 47, 73 52, 78 55 Z" fill="#dbeafe" stroke="#bfdbfe" stroke-width="1" />
 
-      <form id="register-form" class="auth-form">
-        <div class="form-group">
-          <label for="username">Username</label>
-          <input type="text" id="username" placeholder="Choose a username (min 3 chars)" required>
-        </div>
-        <div class="form-group">
-          <label for="email">Email Address</label>
-          <input type="email" id="email" placeholder="email@aerobreath.com" required>
-        </div>
-        <div class="form-group">
-          <label for="password">Password</label>
-          <input type="password" id="password" placeholder="At least 6 characters" required>
-        </div>
-        <div class="form-group">
-          <label for="city">City</label>
-          <input type="text" id="city" placeholder="e.g. Chennai, London" required>
-        </div>
-        <div class="form-group">
-          <label for="role">Role Type</label>
-          <select id="role" required>
-            <option value="CITIZEN">Citizen (Health Journaling)</option>
-            <option value="ENVIRONMENTAL_OFFICER">Environmental Officer (Manage Stations)</option>
-            <option value="MEDICAL_RESEARCHER">Medical Researcher (Analyze Clinical Logs)</option>
-            <option value="SYSTEM_ADMIN">System Admin (High Privilege Console)</option>
-          </select>
-        </div>
-        <button type="submit" class="btn btn-primary">Create Account</button>
-      </form>
+            <!-- Ears: Normal/Happy State -->
+            <g class="ears-normal-happy">
+              <path d="M 32 36 Q 22 10, 32 8 Q 42 10, 38 36 Z" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2" />
+              <path d="M 33 33 Q 26 13, 32 11 Q 38 13, 36 33 Z" fill="#fda4af" />
+              <path d="M 68 36 Q 78 10, 68 8 Q 58 10, 62 36 Z" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2" />
+              <path d="M 67 33 Q 74 13, 68 11 Q 62 13, 64 33 Z" fill="#fda4af" />
+            </g>
 
-      <div class="auth-footer">
-        <p>Already have an account? <a href="login.html">Sign In here</a></p>
+            <!-- Ears: Sad State -->
+            <g class="ears-sad">
+              <path d="M 30 42 Q 10 40, 12 52 Q 15 62, 32 46 Z" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2" />
+              <path d="M 28 43 Q 14 42, 16 50 Q 18 57, 29 46 Z" fill="#fda4af" />
+              <path d="M 70 42 Q 90 40, 88 52 Q 85 62, 68 46 Z" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2" />
+              <path d="M 72 43 Q 86 42, 84 50 Q 82 57, 71 46 Z" fill="#fda4af" />
+            </g>
+
+            <!-- Bunny Head/Face -->
+            <circle cx="50" cy="56" r="24" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2" />
+
+            <!-- Normal Eyes -->
+            <g class="eye-normal">
+              <circle cx="38" cy="54" r="4.5" fill="#1e293b" class="eye-left-base" />
+              <circle cx="36.5" cy="52" r="1.5" fill="#ffffff" class="eye-left-shine" />
+              <circle cx="62" cy="54" r="4.5" fill="#1e293b" class="eye-right-base" />
+              <circle cx="60.5" cy="52" r="1.5" fill="#ffffff" class="eye-right-shine" />
+            </g>
+
+            <!-- Happy Eyes -->
+            <g class="eye-happy">
+              <path d="M 33 56 Q 38 49, 43 56" fill="none" stroke="#1e293b" stroke-width="2.8" stroke-linecap="round" />
+              <path d="M 57 56 Q 62 49, 67 56" fill="none" stroke="#1e293b" stroke-width="2.8" stroke-linecap="round" />
+            </g>
+
+            <!-- Sad Eyes -->
+            <g class="eye-sad">
+              <path d="M 33 52 Q 38 56, 43 52" fill="none" stroke="#1e293b" stroke-width="2.8" stroke-linecap="round" />
+              <path d="M 57 52 Q 62 56, 67 52" fill="none" stroke="#1e293b" stroke-width="2.8" stroke-linecap="round" />
+              <ellipse cx="34" cy="61" rx="1.8" ry="2.5" fill="#3b82f6" />
+            </g>
+
+            <!-- Rosy Cheeks -->
+            <circle cx="29" cy="61" r="3.5" fill="#fecdd3" />
+            <circle cx="71" cy="61" r="3.5" fill="#fecdd3" />
+
+            <!-- Nose -->
+            <polygon points="48,58 52,58 50,60" fill="#fda4af" />
+
+            <!-- Normal Mouth -->
+            <path d="M 46 61 Q 48 63, 50 61 Q 52 63, 54 61" fill="none" stroke="#1e293b" stroke-width="1.5" stroke-linecap="round" class="mouth-normal" />
+
+            <!-- Happy Mouth -->
+            <path d="M 46 61 Q 50 68, 54 61 Z" fill="#fda4af" stroke="#1e293b" stroke-width="1.5" class="mouth-happy" />
+
+            <!-- Sad Mouth -->
+            <path d="M 47 64 Q 50 61, 53 64" fill="none" stroke="#1e293b" stroke-width="1.5" stroke-linecap="round" class="mouth-sad" />
+
+            <!-- Paws -->
+            <circle cx="36" cy="76" r="5.5" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2" />
+            <circle cx="64" cy="76" r="5.5" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2" />
+            <circle cx="36" cy="76" r="4.8" fill="#ffffff" />
+            <circle cx="64" cy="76" r="4.8" fill="#ffffff" />
+            <circle cx="36" cy="76" r="2.5" fill="#fda4af" />
+            <circle cx="64" cy="76" r="2.5" fill="#fda4af" />
+          </svg>
+        </div>
+
+        <div class="auth-header">
+          <svg class="brand-logo-svg" style="width: 48px; height: 48px; margin-bottom: 12px; margin-right: 0;" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="logo-grad-auth" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#3b82f6" />
+                <stop offset="50%" stop-color="#8b5cf6" />
+                <stop offset="100%" stop-color="#06b6d4" />
+              </linearGradient>
+            </defs>
+            <path d="M 16 16 C 10 8, 4 10, 4 18 C 4 26, 11 26, 16 18 C 21 26, 28 26, 28 18 C 28 10, 22 8, 16 16 Z" stroke="url(#logo-grad-auth)" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" />
+            <circle cx="16" cy="12" r="2.5" fill="#10b981" />
+          </svg>
+          <h2>AeroBreath</h2>
+          <p>Create your new account to join the air monitor network</p>
+        </div>
+
+        <div id="alert-container"></div>
+
+        <form id="register-form" class="auth-form">
+          <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" placeholder="Choose a username (min 3 chars)" required>
+          </div>
+          <div class="form-group">
+            <label for="email">Email Address</label>
+            <input type="email" id="email" placeholder="email@aerobreath.com" required>
+          </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" placeholder="At least 6 characters" required>
+          </div>
+          <div class="form-group">
+            <label for="city">City</label>
+            <input type="text" id="city" placeholder="e.g. Chennai, London" required>
+          </div>
+          <div class="form-group">
+            <label for="role">Role Type</label>
+            <select id="role" required>
+              <option value="CITIZEN">Citizen (Health Journaling)</option>
+              <option value="ENVIRONMENTAL_OFFICER">Environmental Officer (Manage Stations)</option>
+              <option value="MEDICAL_RESEARCHER">Medical Researcher (Analyze Clinical Logs)</option>
+              <option value="SYSTEM_ADMIN">System Admin (High Privilege Console)</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary">Create Account</button>
+        </form>
+
+        <div class="auth-footer">
+          <p>Already have an account? <a href="login.html">Sign In here</a></p>
+        </div>
       </div>
     </div>
   </div>
@@ -61,9 +185,60 @@
 
     const form = document.getElementById('register-form');
     const alertContainer = document.getElementById('alert-container');
+    const animal = document.getElementById('wind-animal');
+    const bubble = document.getElementById('speech-bubble');
+
+    const greetings = [
+      "Hi! 🌬️",
+      "Hello! 👋",
+      "How are you? 🌸",
+      "How was your day? ✨",
+      "Welcome back! 🎀",
+      "Let's breathe clean air! 🌬️",
+      "Have a wonderful day! 🌟"
+    ];
+
+    // Pop up animal and random greeting on load
+    window.addEventListener('DOMContentLoaded', () => {
+      // Pick a random greeting
+      const randomGreeting = greetings[Math.floor(Math.random() * greetings.length)];
+      bubble.textContent = randomGreeting;
+
+      // Pop bunny up
+      setTimeout(() => {
+        animal.classList.add('popped');
+      }, 500);
+
+      // Pop bubble up shortly after
+      setTimeout(() => {
+        bubble.classList.add('show');
+      }, 1100);
+
+      // Hide bubble after 5.5 seconds
+      setTimeout(() => {
+        bubble.classList.remove('show');
+      }, 6000);
+    });
+
+    // Hop animal when inputs/select focused
+    document.querySelectorAll('input, select').forEach(input => {
+      input.addEventListener('focus', () => {
+        if (!animal.classList.contains('is-happy') && !animal.classList.contains('is-sad')) {
+          animal.classList.add('bounce-once');
+          setTimeout(() => animal.classList.remove('bounce-once'), 600);
+        }
+      });
+    });
+
+    // Also bounce when animal itself is clicked
+    animal.addEventListener('click', () => {
+      animal.classList.add('bounce-once');
+      setTimeout(() => animal.classList.remove('bounce-once'), 600);
+    });
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
+      animal.classList.add('active'); // Start active flying bounce animation
       alertContainer.innerHTML = ''; // Clear alerts
 
       const username = document.getElementById('username').value.trim();
@@ -83,11 +258,31 @@
 
         alertContainer.innerHTML = `<div class="success-banner">Account created successfully! Redirecting to login page...</div>`;
         
+        animal.classList.remove('is-sad');
+        animal.classList.add('is-happy'); // Smile on success!
+
+        // Success greeting!
+        bubble.textContent = "Yay! Success! 🎉";
+        bubble.classList.add('show');
+
         setTimeout(() => {
           window.location.href = 'login.html';
         }, 1500);
 
       } catch (err) {
+        animal.classList.remove('active');
+        animal.classList.remove('is-happy');
+        animal.classList.add('is-sad'); // Sad on failure!
+
+        // Error greeting!
+        bubble.textContent = "Oh no... 😢";
+        bubble.classList.add('show');
+        
+        // Return to normal and hide bubble after 3.5 seconds
+        setTimeout(() => {
+          animal.classList.remove('is-sad');
+          bubble.classList.remove('show');
+        }, 3500);
         console.error(err);
         if (!err.response) {
           alertContainer.innerHTML = `<div class="error-banner">Network Error: Cannot connect to Spring Boot backend on https://aerobreathbackend-1.onrender.com. Please make sure the backend is running, or that you opened this page via https://aerobreathbackend-1.onrender.com/register.html (not by double-clicking the file).</div>`;
@@ -106,6 +301,21 @@
           alertContainer.innerHTML = `<div class="error-banner">Registration failed. Check if username/email already exists.</div>`;
         }
       }
+    });
+  </script>
+  <script>
+    // Futuristic background blobs parallax movement
+    const blob1 = document.querySelector('.blob-blue');
+    const blob2 = document.querySelector('.blob-purple');
+    const blob3 = document.querySelector('.blob-indigo');
+
+    document.addEventListener('mousemove', (e) => {
+      const x = (window.innerWidth / 2 - e.clientX) / 25;
+      const y = (window.innerHeight / 2 - e.clientY) / 25;
+      
+      if (blob1) blob1.style.transform = `translate(${x}px, ${y}px)`;
+      if (blob2) blob2.style.transform = `translate(${-x}px, ${-y}px)`;
+      if (blob3) blob3.style.transform = `translate(${x * 0.5}px, ${-y * 0.5}px)`;
     });
   </script>
 </body>
