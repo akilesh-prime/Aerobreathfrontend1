@@ -137,6 +137,25 @@ body {
   background-color: #fee2e2;
 }
 
+.btn-logout-red {
+  background: rgba(239, 68, 68, 0.15);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: all 0.3s ease;
+  font-weight: 600;
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.05);
+}
+
+.btn-logout-red:hover {
+  background: rgba(239, 68, 68, 0.35);
+  color: #ffffff;
+  border-color: rgba(239, 68, 68, 0.6);
+  box-shadow: 0 0 15px rgba(239, 68, 68, 0.25);
+  transform: translateY(-1px);
+}
+
 .btn-sm {
   padding: 6px 12px;
   font-size: 0.8rem;
@@ -1278,6 +1297,94 @@ body {
   }
   .split-right {
     margin-bottom: 16px;
+  }
+}
+
+/* Mobile Responsive Deck */
+@media (max-width: 768px) {
+  .navbar-container {
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px 16px;
+    margin: 8px 12px 0 12px;
+    align-items: stretch;
+  }
+  .navbar-links {
+    justify-content: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding-top: 10px;
+    width: 100%;
+  }
+  .navbar-right {
+    justify-content: space-between;
+    width: 100%;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding-top: 10px;
+  }
+  .navbar-left {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+  }
+  .main-content {
+    padding: 16px 12px;
+  }
+  .welcome-banner {
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  .welcome-banner h1 {
+    font-size: 1.5rem;
+  }
+  .welcome-subtitle {
+    font-size: 0.9rem;
+    margin-bottom: 16px;
+  }
+  .content-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .content-header button {
+    width: 100%;
+  }
+  .filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 12px;
+    gap: 12px;
+  }
+  .search-group {
+    max-width: none;
+  }
+  .filter-group {
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-card {
+    padding: 24px 16px;
+  }
+  .split-container {
+    padding: 0 12px;
+    margin-top: 100px;
+  }
+  .about-card {
+    padding: 20px 16px;
+  }
+  .about-features {
+    gap: 12px;
+  }
+  .stations-grid {
+    grid-template-columns: 1fr;
+  }
+  .health-form-card,
+  .health-history-card {
+    padding: 16px;
   }
 }
 
