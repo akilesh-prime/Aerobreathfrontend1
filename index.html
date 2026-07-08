@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AeroBreath - Dashboard</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+  <!-- Check Auth immediately -->
+  <script>
+    if (!localStorage.getItem('token')) {
+      window.location.href = 'login.html';
+    }
+  </script>
+
+  <div class="app-container">
+    <!-- Navbar -->
+    <nav class="navbar-container">
+      <div class="navbar-left">
+        <a href="index.html" class="navbar-brand">
+          <span class="brand-icon">🌬️</span> AeroBreath
+        </a>
+      </div>
+
+      <div class="navbar-links" id="role-links">
+        <!-- Rendered via JS based on role -->
+      </div>
+
+      <div class="navbar-right">
+        <div class="user-profile-badge">
+          <div class="profile-dot"></div>
+          <span class="profile-name" id="user-display">User</span>
+          <span class="profile-role" id="role-display">Role</span>
+        </div>
+        <button onclick="handleLogout()" class="btn btn-outline btn-sm">Logout</button>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <div id="alert-container"></div>
+
+      <!-- Welcome Banner -->
+      <section class="welcome-banner glass animate-fade-in">
+        <h1 id="welcome-title">Hello, User</h1>
+        <p class="welcome-subtitle" id="welcome-subtitle">Welcome back to AeroBreath.</p>
+        <div class="quick-stats">
+          <div class="quick-stat-item">
+            <span class="stat-label">Active City</span>
+            <span class="stat-val" id="stat-city">Global</span>
+          </div>
+          <div class="quick-stat-item">
+            <span class="stat-label">Connection</span>
+            <span class="stat-val text-green">REST API Connected</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- CITIZEN PANEL -->
+      <section id="panel-citizen" class="health-journal-container animate-fade-in" style="display: none;">
+        <div class="content-header">
+          <h2>My Health Journal</h2>
+          <p>Record your respiratory details and log symptom history</p>
+        </div>
+        
+        <div class="health-grid">
+          <!-- Journal Form -->
+          <div class="health-form-card glass">
+            <h3>Log Daily symptoms</h3>
+            <form id="journal-form" class="auth-form" style="margin-top: 16px;">
+              <div class="form-group">
+                <div class="slider-label">
+                  <label for="symptomScore">Symptom Severity Score</label>
+                  <span id="score-preview" class="score-preview-badge score-low">0 - Healthy</span>
+                </div>
+                <input type="range" id="symptomScore" class="symptom-slider" min="0" max="10" value="0">
+                <div class="slider-ticks">
+                  <span>0 (None)</span>
+                  <span>5 (Moderate)</span>
+                  <span>10 (Severe)</span>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="activityLevel">Activity Level</label>
+                <select id="activityLevel" required>
+                  <option value="NORMAL">Normal Routine</option>
+                  <option value="LIGHT_RESTRICTED">Light Restricted Exercise</option>
+                  <option value="HIGHLY_CONFINED">Highly Confined Indoors</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="notes">Clinical / Symptom Notes</label>
+                <textarea id="notes" placeholder="Note any coughing, dust sensitivity, wheezing, etc..." rows="3"></textarea>
+              </div>
+
+              <button type="submit" class="btn btn-primary">Record Entry</button>
+            </form>
+          </div>
+
+          <!-- History Timeline -->
+          <div class="health-history-card glass">
+            <h3>Journal History</h3>
+            <div id="journal-timeline" class="history-timeline" style="margin-top: 16px;">
+              <div class="empty-state">No symptoms logged yet. Use the form to submit your first entry.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- OFFICER PANEL -->
+      <section id="panel-officer" class="animate-fade-in" style="display: none;">
+        <div class="content-header">
+          <div>
+            <h2>Air Quality Monitoring Stations</h2>
+            <p>Deploy, monitor, and update parameters of environmental sensor nodes</p>
+          </div>
+          <button onclick="showAddStationModal(true)" class="btn btn-primary">+ Add Station</button>
+        </div>
+
+        <div class="filter-bar glass">
+          <div class="search-group">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="station-search" placeholder="Search by Station Name or City..." oninput="filterStations()">
+          </div>
+          <div class="filter-group">
+            <label for="status-filter">Status:</label>
+            <select id="status-filter" class="select-input" onchange="filterStations()">
+              <option value="ALL">All Stations</option>
+              <option value="ACTIVE">Active Only</option>
+              <option value="MAINTENANCE">Maintenance Only</option>
+              <option value="DECOMMISSIONED">Decommissioned Only</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="stations-grid" class="stations-grid">
+          <div class="empty-state">Loading sensor stations...</div>
+        </div>
+      </section>
+
+      <!-- RESEARCHER PANEL -->
+      <section id="panel-researcher" class="insights-container animate-fade-in" style="display: none;">
+        <div class="content-header">
+          <h2>Researcher Clinical Insights</h2>
+          <p>Query aggregated city-wide datasets for air quality and clinical symptoms</p>
+        </div>
+
+        <div class="insights-search-card glass">
+          <h3>Generate City Correlation Report</h3>
+          <form id="insight-form" class="inline-search-form" style="margin-top: 12px;">
+            <input type="text" id="insight-city" class="form-group" style="flex: 1;" placeholder="Enter city name (e.g. Chennai, London)" required>
+            <button type="submit" class="btn btn-primary">Generate Analysis</button>
+          </form>
+        </div>
+
+        <div id="insights-result">
+          <!-- Populated by JS -->
+          <div class="empty-state">Submit a city name above to perform statistical correlation analysis.</div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Modals -->
+    <!-- Add Station Modal -->
+    <div id="add-station-modal" class="modal-backdrop" style="display: none;">
+      <div class="modal-card glass animate-fade-in">
+        <div class="modal-header">
+          <h3>Register New Sensor Station</h3>
+          <button onclick="showAddStationModal(false)" class="close-btn">&times;</button>
+        </div>
+        <div id="modal-alert-container"></div>
+        <form id="add-station-form" class="modal-form">
+          <div class="form-group">
+            <label for="new-stationName">Station Name</label>
+            <input type="text" id="new-stationName" placeholder="e.g. Anna Nagar Sensor" required>
+          </div>
+          <div class="form-group">
+            <label for="new-city">City Location</label>
+            <input type="text" id="new-city" placeholder="e.g. Chennai" required>
+          </div>
+          <div class="form-group">
+            <label for="new-registrationId">Registration Serial ID</label>
+            <input type="text" id="new-registrationId" placeholder="e.g. REG-MS-502" required>
+          </div>
+          <div class="form-group">
+            <label for="new-status">Initial Status</label>
+            <select id="new-status" required>
+              <option value="ACTIVE">ACTIVE</option>
+              <option value="MAINTENANCE">MAINTENANCE</option>
+            </select>
+          </div>
+          <div class="modal-actions">
+            <button type="button" onclick="showAddStationModal(false)" class="btn btn-outline">Cancel</button>
+            <button type="submit" class="btn btn-primary">Deploy Station</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Record Metric Modal -->
+    <div id="record-metric-modal" class="modal-backdrop" style="display: none;">
+      <div class="modal-card glass animate-fade-in">
+        <div class="modal-header">
+          <h3>Record Sensor Parameters</h3>
+          <button onclick="showRecordMetricModal(false)" class="close-btn">&times;</button>
+        </div>
+        <div id="metric-alert-container"></div>
+        <form id="record-metric-form" class="modal-form">
+          <input type="hidden" id="metric-station-id">
+          <div class="form-group">
+            <label for="metric-aqi">Air Quality Index (AQI)</label>
+            <input type="number" id="metric-aqi" min="0" max="500" placeholder="e.g. 80" required>
+          </div>
+          <div class="form-group">
+            <label for="metric-pm25">PM2.5 Level (µg/m³)</label>
+            <input type="number" id="metric-pm25" step="0.01" min="0" placeholder="e.g. 15.5">
+          </div>
+          <div class="form-group">
+            <label for="metric-pm10">PM10 Level (µg/m³)</label>
+            <input type="number" id="metric-pm10" step="0.01" min="0" placeholder="e.g. 45.2">
+          </div>
+          <div class="modal-actions">
+            <button type="button" onclick="showRecordMetricModal(false)" class="btn btn-outline">Cancel</button>
+            <button type="submit" class="btn btn-primary">Transmit Metrics</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ----------------------------------------------------
+    // CONSTANTS & SESSION CONFIGURATION
+    // ----------------------------------------------------
+    const token = localStorage.getItem('token');
+    const role = localStorage.getItem('role');
+    const user = localStorage.getItem('user');
+    const city = localStorage.getItem('city');
+
+    // Display values in HTML
+    document.getElementById('user-display').textContent = user;
+    document.getElementById('role-display').textContent = role.replace('_', ' ');
+    document.getElementById('welcome-title').textContent = `Hello, ${user}`;
+    document.getElementById('stat-city').textContent = city || 'Global';
+
+    // Set Welcome Subtitle
+    const getWelcomeMessage = () => {
+      switch (role) {
+        case 'CITIZEN': return 'Welcome back to AeroBreath. Update your health journal today to stay protected.';
+        case 'ENVIRONMENTAL_OFFICER': return 'Station networks online. Ready for environmental air quality monitoring.';
+        case 'MEDICAL_RESEARCHER': return 'Analytics engine active. Connect local health variables and AQI matrices.';
+        case 'SYSTEM_ADMIN': return 'System consoles live. High privilege command deck active.';
+        default: return 'Welcome to AeroBreath monitoring services.';
+      }
+    };
+    document.getElementById('welcome-subtitle').textContent = getWelcomeMessage();
+
+    // ----------------------------------------------------
+    // AXIOS CONFIGURATION WITH INTERCEPTORS
+    // ----------------------------------------------------
+    const api = axios.create({
+      baseURL: 'https://aerobreathbackend-1.onrender.com'
+    });
+
+    // Request Interceptor: Attach JWT bearer token
+    api.interceptors.request.use(config => {
+      if (token) {
+        config.headers['Authorization'] = `Bearer ${token}`;
+      }
+      return config;
+    }, error => Promise.reject(error));
+
+    // Response Interceptor: Handle 401 Redirects
+    api.interceptors.response.use(response => response, error => {
+      if (error.response && error.response.status === 401) {
+        handleLogout();
+      }
+      return Promise.reject(error);
+    });
+
+    // ----------------------------------------------------
+    // LOGOUT LOGIC
+    // ----------------------------------------------------
+    function handleLogout() {
+      localStorage.clear();
+      window.location.href = 'login.html';
+    }
+
+    // ----------------------------------------------------
+    // RENDER NAVIGATION LINKS & ACCESS GATES
+    // ----------------------------------------------------
+    const roleLinks = document.getElementById('role-links');
+    if (role === 'CITIZEN') {
+      roleLinks.innerHTML = `<span class="navbar-link active" onclick="switchTab('citizen')">My Health Journal</span>`;
+      document.getElementById('panel-citizen').style.display = 'block';
+      loadJournalLogs();
+    } else if (role === 'ENVIRONMENTAL_OFFICER' || role === 'SYSTEM_ADMIN') {
+      roleLinks.innerHTML = `<span class="navbar-link active" onclick="switchTab('officer')">Stations List</span>`;
+      document.getElementById('panel-officer').style.display = 'block';
+      loadStations();
+    } else if (role === 'MEDICAL_RESEARCHER') {
+      roleLinks.innerHTML = `<span class="navbar-link active" onclick="switchTab('researcher')">Clinical Insights</span>`;
+      document.getElementById('panel-researcher').style.display = 'block';
+    }
+
+    // Switch between panels visually (if multi-linked)
+    function switchTab(activeTab) {
+      document.getElementById('panel-citizen').style.display = activeTab === 'citizen' ? 'block' : 'none';
+      document.getElementById('panel-officer').style.display = activeTab === 'officer' ? 'block' : 'none';
+      document.getElementById('panel-researcher').style.display = activeTab === 'researcher' ? 'block' : 'none';
+      
+      const links = document.querySelectorAll('.navbar-link');
+      links.forEach(link => link.classList.remove('active'));
+      event.target.classList.add('active');
+    }
+
+    // ----------------------------------------------------
+    // CITIZEN JOURNALING SCRIPT
+    // ----------------------------------------------------
+    const scoreSlider = document.getElementById('symptomScore');
+    const scorePreview = document.getElementById('score-preview');
+    
+    scoreSlider.addEventListener('input', (e) => {
+      const score = parseInt(e.target.value);
+      if (score === 0) {
+        scorePreview.textContent = '0 - Healthy';
+        scorePreview.className = 'score-preview-badge score-low';
+      } else if (score <= 3) {
+        scorePreview.textContent = `${score} - Minor Symptoms`;
+        scorePreview.className = 'score-preview-badge score-low';
+      } else if (score <= 7) {
+        scorePreview.textContent = `${score} - Moderate Activity Restrict`;
+        scorePreview.className = 'score-preview-badge score-med';
+      } else {
+        scorePreview.textContent = `${score} - Severe Respiratory Trouble`;
+        scorePreview.className = 'score-preview-badge score-high';
+      }
+    });
+
+    const journalForm = document.getElementById('journal-form');
+    journalForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const alertContainer = document.getElementById('alert-container');
+      alertContainer.innerHTML = '';
+
+      const score = parseInt(scoreSlider.value);
+      const activityLevel = document.getElementById('activityLevel').value;
+      const notes = document.getElementById('notes').value.trim();
+
+      try {
+        await api.post('/api/journal', {
+          symptomScore: score,
+          activityLevel,
+          notes
+        });
+        
+        // Reset and reload
+        journalForm.reset();
+        scorePreview.textContent = '0 - Healthy';
+        scorePreview.className = 'score-preview-badge score-low';
+        
+        alertContainer.innerHTML = `<div class="success-banner">Journal entry logged successfully!</div>`;
+        loadJournalLogs();
+      } catch (err) {
+        console.error(err);
+        const msg = err.response?.data?.message || 'Failed to submit health journal entry.';
+        alertContainer.innerHTML = `<div class="error-banner">${msg}</div>`;
+      }
+    });
+
+    async function loadJournalLogs() {
+      const timeline = document.getElementById('journal-timeline');
+      try {
+        const response = await api.get('/api/journal');
+        const logs = response.data; // List of HealthObservation
+        if (logs.length === 0) {
+          timeline.innerHTML = `<div class="empty-state">No symptoms logged yet. Use the form to submit your first entry.</div>`;
+          return;
+        }
+
+        timeline.innerHTML = logs.map(log => {
+          let badgeClass = 'score-low';
+          if (log.symptomScore > 7) badgeClass = 'score-high';
+          else if (log.symptomScore > 3) badgeClass = 'score-med';
+
+          const formattedDate = new Date(log.observationDate).toLocaleDateString('en-US', {
+            month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit'
+          });
+
+          return `
+            <div class="timeline-item glass">
+              <div class="timeline-header">
+                <span class="timeline-date">${formattedDate}</span>
+                <span class="score-badge ${badgeClass}">Score: ${log.symptomScore}</span>
+              </div>
+              <div class="timeline-details">
+                <div class="timeline-detail-row">
+                  <span class="label">Activity Status:</span>
+                  <strong>${log.activityLevel.replace('_', ' ')}</strong>
+                </div>
+                ${log.notes ? `<div class="timeline-notes">"${log.notes}"</div>` : ''}
+              </div>
+            </div>
+          `;
+        }).join('');
+
+      } catch (err) {
+        console.error(err);
+        timeline.innerHTML = `<div class="error-banner">Failed to retrieve history logs.</div>`;
+      }
+    }
+
+    // ----------------------------------------------------
+    // SENSOR STATIONS SCRIPT
+    // ----------------------------------------------------
+    let localStationsList = [];
+
+    async function loadStations() {
+      const grid = document.getElementById('stations-grid');
+      try {
+        const response = await api.get('/api/stations');
+        localStationsList = response.data; // List of SensorStation
+        renderStations(localStationsList);
+      } catch (err) {
+        console.error(err);
+        grid.innerHTML = `<div class="error-banner">Failed to connect to station sensors.</div>`;
+      }
+    }
+
+    function renderStations(stations) {
+      const grid = document.getElementById('stations-grid');
+      if (stations.length === 0) {
+        grid.innerHTML = `<div class="empty-state">No stations found matching filters.</div>`;
+        return;
+      }
+
+      grid.innerHTML = stations.map(station => {
+        // Status class
+        let badgeClass = 'badge-active';
+        if (station.status === 'MAINTENANCE') badgeClass = 'badge-maintenance';
+        else if (station.status === 'DECOMMISSIONED') badgeClass = 'badge-decommissioned';
+
+        // Capacity calculation
+        const percent = Math.min(station.dataCapacity || 0, 100);
+        let barColor = 'var(--green)';
+        if (percent >= 90) barColor = 'var(--red)';
+        else if (percent >= 70) barColor = 'var(--amber)';
+
+        return `
+          <div class="station-card glass card-hover">
+            <div class="station-card-header">
+              <div>
+                <h3>${station.stationName}</h3>
+                <span class="station-city">${station.city} (${station.registrationId})</span>
+              </div>
+              <span class="status-badge ${badgeClass}">${station.status}</span>
+            </div>
+
+            <div class="station-details">
+              <div class="detail-item">
+                <span class="detail-label">AQI INDEX</span>
+                <span class="detail-val">${station.aqi !== null ? station.aqi : 'N/A'}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">PM2.5 (µg/m³)</span>
+                <span class="detail-val">${station.pm25 !== null ? station.pm25 : 'N/A'}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">PM10 (µg/m³)</span>
+                <span class="detail-val">${station.pm10 !== null ? station.pm10 : 'N/A'}</span>
+              </div>
+            </div>
+
+            <!-- Capacity Bar -->
+            <div class="capacity-bar-container">
+              <div class="capacity-bar-header">
+                <span>Record Transmit Load</span>
+                <span class="capacity-percentage">${percent}%</span>
+              </div>
+              <div class="capacity-track">
+                <div class="capacity-fill" style="width: ${percent}%; background-color: ${barColor};"></div>
+              </div>
+            </div>
+
+            <div class="station-actions">
+              ${station.status !== 'DECOMMISSIONED' ? `
+                <button onclick="showRecordMetricForm(${station.id})" class="btn btn-primary btn-sm btn-outline">Record Metric</button>
+                <select onchange="updateStationStatus(${station.id}, this.value)" class="select-input btn-sm">
+                  <option value="">Set Status</option>
+                  <option value="ACTIVE" ${station.status === 'ACTIVE' ? 'disabled' : ''}>ACTIVE</option>
+                  <option value="MAINTENANCE" ${station.status === 'MAINTENANCE' ? 'disabled' : ''}>MAINTENANCE</option>
+                </select>
+                <button onclick="decommissionStation(${station.id})" class="btn btn-danger btn-sm">Decommission</button>
+              ` : `<span class="detail-label">Node Offline Permanently</span>`}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function filterStations() {
+      const searchVal = document.getElementById('station-search').value.toLowerCase();
+      const statusFilter = document.getElementById('status-filter').value;
+
+      const filtered = localStationsList.filter(station => {
+        const matchesSearch = station.stationName.toLowerCase().includes(searchVal) || station.city.toLowerCase().includes(searchVal);
+        const matchesStatus = statusFilter === 'ALL' || station.status === statusFilter;
+        return matchesSearch && matchesStatus;
+      });
+
+      renderStations(filtered);
+    }
+
+    // Modal view handlers
+    function showAddStationModal(show) {
+      document.getElementById('add-station-modal').style.display = show ? 'flex' : 'none';
+      if (!show) {
+        document.getElementById('add-station-form').reset();
+        document.getElementById('modal-alert-container').innerHTML = '';
+      }
+    }
+
+    const addStationForm = document.getElementById('add-station-form');
+    addStationForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const alertContainer = document.getElementById('modal-alert-container');
+      alertContainer.innerHTML = '';
+
+      const stationName = document.getElementById('new-stationName').value.trim();
+      const city = document.getElementById('new-city').value.trim();
+      const registrationId = document.getElementById('new-registrationId').value.trim();
+      const status = document.getElementById('new-status').value;
+
+      try {
+        await api.post('/api/stations', {
+          stationName,
+          city,
+          registrationId,
+          status
+        });
+        showAddStationModal(false);
+        loadStations();
+      } catch (err) {
+        console.error(err);
+        const msg = err.response?.data?.message || 'Failed to deploy new sensor station.';
+        alertContainer.innerHTML = `<div class="error-banner">${msg}</div>`;
+      }
+    });
+
+    async function updateStationStatus(id, newStatus) {
+      if (!newStatus) return;
+      try {
+        await api.put(`/api/stations/${id}/status?status=${newStatus}`);
+        loadStations();
+      } catch (err) {
+        console.error(err);
+        alert('Failed to update station status.');
+      }
+    }
+
+    async function decommissionStation(id) {
+      if (!confirm('Are you sure you want to decommission this station? This cannot be undone.')) return;
+      try {
+        await api.delete(`/api/stations/${id}`);
+        loadStations();
+      } catch (err) {
+        console.error(err);
+        alert('Failed to decommission station.');
+      }
+    }
+
+    // Metric logger form
+    function showRecordMetricForm(id) {
+      document.getElementById('metric-station-id').value = id;
+      showRecordMetricModal(true);
+    }
+
+    function showRecordMetricModal(show) {
+      document.getElementById('record-metric-modal').style.display = show ? 'flex' : 'none';
+      if (!show) {
+        document.getElementById('record-metric-form').reset();
+        document.getElementById('metric-alert-container').innerHTML = '';
+      }
+    }
+
+    const recordMetricForm = document.getElementById('record-metric-form');
+    recordMetricForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const alertContainer = document.getElementById('metric-alert-container');
+      alertContainer.innerHTML = '';
+
+      const stationId = parseInt(document.getElementById('metric-station-id').value);
+      const aqi = parseInt(document.getElementById('metric-aqi').value);
+      const pm25Val = document.getElementById('metric-pm25').value;
+      const pm10Val = document.getElementById('metric-pm10').value;
+
+      const payload = {
+        stationId,
+        aqi,
+        pm25: pm25Val ? parseFloat(pm25Val) : null,
+        pm10: pm10Val ? parseFloat(pm10Val) : null
+      };
+
+      try {
+        await api.post('/api/stations/metric', payload);
+        showRecordMetricModal(false);
+        loadStations();
+      } catch (err) {
+        console.error(err);
+        const msg = err.response?.data?.message || 'Failed to record sensor metric parameters.';
+        alertContainer.innerHTML = `<div class="error-banner">${msg}</div>`;
+      }
+    });
+
+    // ----------------------------------------------------
+    // CLINICAL RESEARCH INSIGHTS SCRIPT
+    // ----------------------------------------------------
+    const insightForm = document.getElementById('insight-form');
+    insightForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const resultDiv = document.getElementById('insights-result');
+      const queryCity = document.getElementById('insight-city').value.trim();
+
+      resultDiv.innerHTML = `<div class="loading-spinner">Performing statistical correlation analysis for ${queryCity}...</div>`;
+
+      try {
+        const response = await api.get(`/api/research/correlation?city=${queryCity}`);
+        const data = response.data; // CorrelationReportDto: { city, averageAqi, averageSymptomScore, totalObservations, interpretation }
+
+        if (!data || data.totalObservations === 0) {
+          resultDiv.innerHTML = `
+            <div class="empty-state">
+              No historical data profiles recorded for <strong>"${queryCity}"</strong>. 
+              Deploy stations and log citizen symptom scores for this city to generate intelligence metrics.
+            </div>
+          `;
+          return;
+        }
+
+        // AQI indicator tags
+        let aqiClass = 'aqi-good';
+        let aqiLabel = 'Good Quality';
+        if (data.averageAqi > 150) {
+          aqiClass = 'aqi-poor';
+          aqiLabel = 'Poor/Unhealthy';
+        } else if (data.averageAqi > 50) {
+          aqiClass = 'aqi-mod';
+          aqiLabel = 'Moderate';
+        }
+
+        resultDiv.innerHTML = `
+          <div class="report-dashboard">
+            <div class="report-header glass">
+              <h2>Analytics Correlation Profile: ${data.city}</h2>
+              <div class="observation-count">
+                <span class="count-label">Clinical Data Pool:</span>
+                <span class="count-value">${data.totalObservations} profiles</span>
+              </div>
+            </div>
+
+            <div class="report-metrics">
+              <div class="metric-card glass">
+                <div class="metric-icon">🌬️</div>
+                <div class="metric-content">
+                  <span class="metric-label">Mean Ambient AQI</span>
+                  <span class="metric-value">${data.averageAqi.toFixed(2)}</span>
+                  <span class="metric-severity-tag ${aqiClass}">${aqiLabel}</span>
+                </div>
+              </div>
+
+              <div class="metric-card glass">
+                <div class="metric-icon">🏥</div>
+                <div class="metric-content">
+                  <span class="metric-label">Mean Symptom Severity</span>
+                  <span class="metric-value">${data.averageSymptomScore.toFixed(2)} / 10</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="interpretation-card glass">
+              <div class="card-header-icon">Diagnostic Conclusion Matrix:</div>
+              <div class="interpretation-body">
+                <p>${data.interpretation}</p>
+              </div>
+            </div>
+          </div>
+        `;
+
+      } catch (err) {
+        console.error(err);
+        resultDiv.innerHTML = `
+          <div class="error-banner">
+            Failed to generate correlation report. Please check if coordinates match or search query exists.
+          </div>
+        `;
+      }
+    });
+
+  </script>
+</body>
+</html>

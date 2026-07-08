@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AeroBreath - Register</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+  <div class="auth-container">
+    <div class="auth-card glass animate-fade-in">
+      <div class="auth-header">
+        <div class="logo-spark">Register 🌬️</div>
+        <h2>AeroBreath</h2>
+        <p>Create your new account to join the air monitor network</p>
+      </div>
+
+      <div id="alert-container"></div>
+
+      <form id="register-form" class="auth-form">
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input type="text" id="username" placeholder="Choose a username (min 3 chars)" required>
+        </div>
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input type="email" id="email" placeholder="email@aerobreath.com" required>
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" placeholder="At least 6 characters" required>
+        </div>
+        <div class="form-group">
+          <label for="city">City</label>
+          <input type="text" id="city" placeholder="e.g. Chennai, London" required>
+        </div>
+        <div class="form-group">
+          <label for="role">Role Type</label>
+          <select id="role" required>
+            <option value="CITIZEN">Citizen (Health Journaling)</option>
+            <option value="ENVIRONMENTAL_OFFICER">Environmental Officer (Manage Stations)</option>
+            <option value="MEDICAL_RESEARCHER">Medical Researcher (Analyze Clinical Logs)</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Create Account</button>
+      </form>
+
+      <div class="auth-footer">
+        <p>Already have an account? <a href="login.html">Sign In here</a></p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Redirect if already logged in
+    if (localStorage.getItem('token')) {
+      window.location.href = 'index.html';
+    }
+
+    const form = document.getElementById('register-form');
+    const alertContainer = document.getElementById('alert-container');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      alertContainer.innerHTML = ''; // Clear alerts
+
+      const username = document.getElementById('username').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const city = document.getElementById('city').value.trim();
+      const role = document.getElementById('role').value;
+
+      try {
+        await axios.post('https://aerobreathbackend-1.onrender.com/api/auth/register', {
+          username,
+          email,
+          password,
+          city,
+          role
+        });
+
+        alertContainer.innerHTML = `<div class="success-banner">Account created successfully! Redirecting to login page...</div>`;
+        
+        setTimeout(() => {
+          window.location.href = 'login.html';
+        }, 1500);
+
+      } catch (err) {
+        console.error(err);
+        if (!err.response) {
+          alertContainer.innerHTML = `<div class="error-banner">Network Error: Cannot connect to Spring Boot backend on https://aerobreathbackend-1.onrender.com. Please make sure the backend is running, or that you opened this page via https://aerobreathbackend-1.onrender.com/register.html (not by double-clicking the file).</div>`;
+          return;
+        }
+        const data = err.response.data;
+        if (data && typeof data === 'object') {
+          if (data.message) {
+            alertContainer.innerHTML = `<div class="error-banner">${data.message}</div>`;
+          } else {
+            // Parse field mapping validation errors: { field: message }
+            const errors = Object.entries(data).map(([field, msg]) => `${field}: ${msg}`).join(', ');
+            alertContainer.innerHTML = `<div class="error-banner">${errors || 'Registration failed. Check inputs.'}</div>`;
+          }
+        } else {
+          alertContainer.innerHTML = `<div class="error-banner">Registration failed. Check if username/email already exists.</div>`;
+        }
+      }
+    });
+  </script>
+</body>
+</html>

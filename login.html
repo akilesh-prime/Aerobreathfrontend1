@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AeroBreath - Sign In</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+  <div class="auth-container">
+    <div class="auth-card glass animate-fade-in">
+      <div class="auth-header">
+        <div class="logo-spark">Breathe 🌬️</div>
+        <h2>AeroBreath</h2>
+        <p>Environmental Air & Respiratory Health Portal</p>
+      </div>
+
+      <div id="alert-container"></div>
+
+      <form id="login-form" class="auth-form">
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input type="text" id="username" placeholder="Email (user@aerobreath.com)" required>
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" placeholder="password" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Sign In</button>
+      </form>
+
+      <div class="auth-footer">
+        <p>Don't have an account? <a href="register.html">Register here</a></p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Redirect if already logged in
+    if (localStorage.getItem('token')) {
+      window.location.href = 'index.html';
+    }
+
+    const form = document.getElementById('login-form');
+    const alertContainer = document.getElementById('alert-container');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      alertContainer.innerHTML = ''; // Clear alerts
+      
+      const usernameInput = document.getElementById('username').value.trim();
+      const passwordInput = document.getElementById('password').value;
+
+      try {
+        const response = await axios.post('https://aerobreathbackend-1.onrender.com/api/auth/login', {
+          username: usernameInput,
+          password: passwordInput
+        });
+
+        const data = response.data; // AuthResponseDto: { token, username, role, city }
+        
+       // kk
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('role', data.role);
+        localStorage.setItem('user', data.username);
+        localStorage.setItem('city', data.city || '');
+
+        alertContainer.innerHTML = `<div class="success-banner">Successfully logged in! Redirecting...</div>`;
+        
+        setTimeout(() => {
+          window.location.href = 'index.html';
+        }, 1000);
+
+      } catch (err) {
+        console.error(err);
+        if (!err.response) {
+          alertContainer.innerHTML = `<div class="error-banner">Network Error: Cannot connect to Spring Boot backend on https://aerobreathbackend-1.onrender.com. Please make sure the backend is running, or that you opened this page via https://aerobreathbackend-1.onrender.com (not by double-clicking the file).</div>`;
+          return;
+        }
+        const errMsg = err.response.data?.message || 'Invalid username or password.';
+        alertContainer.innerHTML = `<div class="error-banner">${errMsg}</div>`;
+      }
+    });
+  </script>
+</body>
+</html>
