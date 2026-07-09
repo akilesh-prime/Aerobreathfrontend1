@@ -601,8 +601,19 @@
 
     async function updateStationStatus(id, newStatus) {
       if (!newStatus) return;
+      const station = localStationsList.find(s => s.id === id);
+      if (!station) return;
+      
+      const payload = {
+        stationName: station.stationName,
+        city: station.city,
+        registrationId: station.registrationId,
+        status: newStatus,
+        dataCapacity: station.dataCapacity
+      };
+
       try {
-        await api.put(`/api/stations/${id}/status?status=${newStatus}`);
+        await api.put(`/api/stations/${id}`, payload);
         loadStations();
       } catch (err) {
         console.error(err);
@@ -654,7 +665,7 @@
       };
 
       try {
-        await api.post('/api/stations/metric', payload);
+        await api.post('/api/metrics', payload);
         showRecordMetricModal(false);
         loadStations();
       } catch (err) {
@@ -676,7 +687,7 @@
       resultDiv.innerHTML = `<div class="loading-spinner">Performing statistical correlation analysis for ${queryCity}...</div>`;
 
       try {
-        const response = await api.get(`/api/research/correlation?city=${queryCity}`);
+        const response = await api.get(`/api/insights/correlation/${queryCity}`);
         const data = response.data; // CorrelationReportDto: { city, averageAqi, averageSymptomScore, totalObservations, interpretation }
 
         if (!data || data.totalObservations === 0) {
